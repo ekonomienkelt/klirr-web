@@ -14,10 +14,38 @@
       background: #13151A; color: #F1EFE7;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    h1 { font-size: 20px; font-weight: 800; margin: 8px 0 4px; }
+    h1 { font-size: 22px; font-weight: 800; margin: 8px 0 4px; }
     p.sub { color: #878D9B; font-size: 14px; margin: 0 0 18px; }
     #status { color: #878D9B; font-size: 14px; margin-top: 16px; text-align: center; }
     enablebanking-aspsp-list { display: block; }
+
+    /* Överstyr Enable Bankings standard-CSS så korten matchar Klirrs mörka stil:
+       mjuka ramar, rundade hörn, och banknamn som radbryts i stället för att klippas. */
+    enablebanking-aspsp-list button,
+    enablebanking-aspsp-list a,
+    enablebanking-aspsp-list li,
+    enablebanking-aspsp-list [class*="card"],
+    enablebanking-aspsp-list [class*="Card"],
+    enablebanking-aspsp-list [class*="item"],
+    enablebanking-aspsp-list [class*="aspsp"] {
+      background: #1A1D24 !important;
+      border: 1px solid #2A2E38 !important;
+      border-radius: 16px !important;
+      color: #F1EFE7 !important;
+      box-shadow: none !important;
+    }
+    enablebanking-aspsp-list button:active,
+    enablebanking-aspsp-list a:active,
+    enablebanking-aspsp-list [class*="card"]:active {
+      background: #23272F !important;
+      border-color: #4BFE79 !important;
+    }
+    /* Låt banknamn radbrytas / synas helt i stället för att klippas av */
+    enablebanking-aspsp-list * {
+      white-space: normal !important;
+      text-overflow: clip !important;
+      overflow: visible !important;
+    }
   </style>
 </head>
 <body>
