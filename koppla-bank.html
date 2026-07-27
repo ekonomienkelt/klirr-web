@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Koppla bank</title>
+  <link href="https://auth.enablebanking.com/lib/widgets.css" rel="stylesheet" />
+  <script src="https://auth.enablebanking.com/lib/widgets.umd.min.js"></script>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px 16px 40px;
+      background: #13151A; color: #F1EFE7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    h1 { font-size: 20px; font-weight: 800; margin: 8px 0 4px; }
+    p.sub { color: #878D9B; font-size: 14px; margin: 0 0 18px; }
+    #status { color: #878D9B; font-size: 14px; margin-top: 16px; text-align: center; }
+    enablebanking-aspsp-list { display: block; }
+  </style>
+</head>
+<body>
+  <h1>Välj din bank</h1>
+  <p class="sub">Logga in säkert med BankID via din bank.</p>
+
+  <enablebanking-aspsp-list
+    id="aspsps"
+    country="SE"
+    psu-type="personal"
+    service="AIS"
+    no-beta
+    sandbox></enablebanking-aspsp-list>
+
+  <div id="status"></div>
+
+  <script>
+    (function () {
+      var token = new URLSearchParams(location.hash.slice(1)).get("token") || "";
+      // Supabase-funktionerna (annan origin än denna sida → CORS är påslaget där).
+      var BASE = "https://momaynqsfqziqnvatlsw.supabase.co/functions/v1";
+      var statusEl = document.getElementById("status");
+
+      document.getElementById("aspsps").addEventListener("selected", async function (e) {
+        var aspsp = e.detail && e.detail.name;
+        if (!aspsp) return;
+        statusEl.textContent = "Öppnar " + aspsp + "…";
+        try {
+          var r = await fetch(BASE + "/enable-auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+            body: JSON.stringify({ aspsp_name: aspsp, klirr_account: aspsp }),
+          });
+          var data = await r.json();
+          if (data && data.url) {
+            window.location.href = data.url; // vidare till BankID
+          } else {
+            statusEl.textContent = (data && data.error) || "Kunde inte starta inloggningen.";
+          }
+        } catch (err) {
+          statusEl.textContent = "Nätverksfel: " + err;
+        }
+      });
+
+      document.getElementById("aspsps").addEventListener("error", function () {
+        statusEl.textContent = "Kunde inte ladda banklistan.";
+      });
+    })();
+  </script>
+</body>
+</html>
