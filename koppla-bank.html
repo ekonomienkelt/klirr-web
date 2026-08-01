@@ -18,7 +18,6 @@
     p.sub { color: #878D9B; font-size: 14px; margin: 0 0 18px; }
     #status { color: #878D9B; font-size: 14px; margin-top: 16px; text-align: center; }
     enablebanking-aspsp-list { display: block; }
-
     /* Överstyr Enable Bankings standard-CSS så korten matchar Klirrs mörka stil:
        mjuka ramar, rundade hörn, och banknamn som radbryts i stället för att klippas. */
     enablebanking-aspsp-list button,
@@ -51,24 +50,19 @@
 <body>
   <h1>Välj din bank</h1>
   <p class="sub">Logga in säkert med BankID via din bank.</p>
-
   <enablebanking-aspsp-list
     id="aspsps"
     country="SE"
     psu-type="personal"
     service="AIS"
-    no-beta
-    sandbox></enablebanking-aspsp-list>
-
+    no-beta></enablebanking-aspsp-list>
   <div id="status"></div>
-
   <script>
     (function () {
       var token = new URLSearchParams(location.hash.slice(1)).get("token") || "";
       // Supabase-funktionerna (annan origin än denna sida → CORS är påslaget där).
       var BASE = "https://momaynqsfqziqnvatlsw.supabase.co/functions/v1";
       var statusEl = document.getElementById("status");
-
       document.getElementById("aspsps").addEventListener("selected", async function (e) {
         var aspsp = e.detail && e.detail.name;
         if (!aspsp) return;
@@ -89,7 +83,6 @@
           statusEl.textContent = "Nätverksfel: " + err;
         }
       });
-
       document.getElementById("aspsps").addEventListener("error", function () {
         statusEl.textContent = "Kunde inte ladda banklistan.";
       });
