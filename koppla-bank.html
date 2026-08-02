@@ -4,88 +4,280 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Koppla bank</title>
-  <link href="https://auth.enablebanking.com/lib/widgets.css" rel="stylesheet" />
-  <script src="https://auth.enablebanking.com/lib/widgets.umd.min.js"></script>
   <style>
-    :root { color-scheme: dark; }
-    * { box-sizing: border-box; }
+    :root {
+      color-scheme: dark;
+      --bg: #13151A;
+      --surface: #1B1E26;
+      --surface2: #23272F;
+      --line: #2A2E38;
+      --ink: #F1EFE7;
+      --muted: #878D9B;
+      --green: #4BFE79;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; }
     body {
-      margin: 0; padding: 20px 16px 40px;
-      background: #13151A; color: #F1EFE7;
+      padding: 26px 16px 48px;
+      max-width: 620px;
+      margin-inline: auto;
+      background:
+        radial-gradient(120% 55% at 50% -8%, rgba(75,254,121,0.10), transparent 60%),
+        var(--bg);
+      color: var(--ink);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
     }
-    h1 { font-size: 22px; font-weight: 800; margin: 8px 0 4px; }
-    p.sub { color: #878D9B; font-size: 14px; margin: 0 0 18px; }
-    #status { color: #878D9B; font-size: 14px; margin-top: 16px; text-align: center; }
-    enablebanking-aspsp-list { display: block; }
-    /* Överstyr Enable Bankings standard-CSS så korten matchar Klirrs mörka stil:
-       mjuka ramar, rundade hörn, och banknamn som radbryts i stället för att klippas. */
-    enablebanking-aspsp-list button,
-    enablebanking-aspsp-list a,
-    enablebanking-aspsp-list li,
-    enablebanking-aspsp-list [class*="card"],
-    enablebanking-aspsp-list [class*="Card"],
-    enablebanking-aspsp-list [class*="item"],
-    enablebanking-aspsp-list [class*="aspsp"] {
-      background: #1A1D24 !important;
-      border: 1px solid #2A2E38 !important;
-      border-radius: 16px !important;
-      color: #F1EFE7 !important;
-      box-shadow: none !important;
+
+    .head { text-align: center; margin-bottom: 18px; }
+    .badge {
+      width: 64px; height: 64px; border-radius: 19px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      background: rgba(75,254,121,0.12);
+      border: 1.5px solid var(--green);
+      margin-bottom: 12px;
     }
-    enablebanking-aspsp-list button:active,
-    enablebanking-aspsp-list a:active,
-    enablebanking-aspsp-list [class*="card"]:active {
-      background: #23272F !important;
-      border-color: #4BFE79 !important;
+    h1 { font-size: 24px; font-weight: 800; margin: 0 0 6px; letter-spacing: 0.2px; }
+    p.sub { color: var(--muted); font-size: 14px; line-height: 20px; margin: 0; }
+
+    /* Sökfält */
+    .search-wrap { position: relative; margin: 20px 0 16px; }
+    .search-ic {
+      position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); font-size: 16px; pointer-events: none;
     }
-    /* Låt banknamn radbrytas / synas helt i stället för att klippas av */
-    enablebanking-aspsp-list * {
-      white-space: normal !important;
-      text-overflow: clip !important;
-      overflow: visible !important;
+    #search {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--ink);
+      font-size: 16px;
+      padding: 14px 14px 14px 42px;
+      outline: none;
+      transition: border-color .15s ease;
     }
+    #search:focus { border-color: var(--green); }
+    #search::placeholder { color: var(--muted); }
+
+    /* Grid av banker */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .bank {
+      appearance: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px;
+      min-height: 132px;
+      padding: 18px 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      color: var(--ink);
+      font: inherit;
+      cursor: pointer;
+      text-align: center;
+      transition: transform .1s ease, border-color .12s ease, background .12s ease;
+    }
+    .bank:active { transform: scale(0.97); border-color: var(--green); background: var(--surface2); }
+    @media (hover: hover) {
+      .bank:hover { border-color: var(--green); background: var(--surface2); }
+    }
+    .bank .logo {
+      width: 100%; height: 46px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bank .logo img { max-width: 100%; max-height: 46px; object-fit: contain; }
+    .bank .fallback {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(75,254,121,0.12);
+      color: var(--green); font-weight: 800; font-size: 17px;
+    }
+    .bank .name {
+      font-size: 14px; font-weight: 600; line-height: 1.25;
+      color: var(--ink);
+    }
+
+    /* Status / laddning */
+    #status { color: var(--muted); font-size: 14px; margin-top: 20px; text-align: center; min-height: 20px; }
+    .empty { color: var(--muted); text-align: center; margin-top: 28px; font-size: 14px; }
+
+    /* Skelett vid laddning */
+    .skeleton {
+      min-height: 132px; border-radius: 18px;
+      background: linear-gradient(100deg, var(--surface) 30%, var(--surface2) 50%, var(--surface) 70%);
+      background-size: 220% 100%;
+      animation: shimmer 1.2s infinite;
+      border: 1px solid var(--line);
+    }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    /* Overlay när man valt en bank */
+    #overlay {
+      position: fixed; inset: 0; display: none;
+      align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+      background: rgba(19,21,26,0.86); backdrop-filter: blur(4px);
+      color: var(--ink); text-align: center; padding: 24px;
+    }
+    #overlay.on { display: flex; }
+    .spinner {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 3px solid var(--surface2); border-top-color: var(--green);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <h1>Välj din bank</h1>
-  <p class="sub">Logga in säkert med BankID via din bank.</p>
-  <enablebanking-aspsp-list
-    id="aspsps"
-    country="SE"
-    psu-type="personal"
-    service="AIS"
-    no-beta></enablebanking-aspsp-list>
+  <div class="head">
+    <div class="badge">🏦</div>
+    <h1>Välj din bank</h1>
+    <p class="sub">Logga in säkert med BankID via din bank.</p>
+  </div>
+
+  <div class="search-wrap">
+    <span class="search-ic">🔍</span>
+    <input id="search" type="text" inputmode="search" autocomplete="off"
+           placeholder="Sök efter din bank…" disabled />
+  </div>
+
+  <div id="grid" class="grid"></div>
   <div id="status"></div>
+
+  <div id="overlay">
+    <div class="spinner"></div>
+    <div id="overlay-text">Öppnar banken…</div>
+  </div>
+
   <script>
     (function () {
       var token = new URLSearchParams(location.hash.slice(1)).get("token") || "";
-      // Supabase-funktionerna (annan origin än denna sida → CORS är påslaget där).
       var BASE = "https://momaynqsfqziqnvatlsw.supabase.co/functions/v1";
+      var grid = document.getElementById("grid");
       var statusEl = document.getElementById("status");
-      document.getElementById("aspsps").addEventListener("selected", async function (e) {
-        var aspsp = e.detail && e.detail.name;
-        if (!aspsp) return;
-        statusEl.textContent = "Öppnar " + aspsp + "…";
+      var searchEl = document.getElementById("search");
+      var overlay = document.getElementById("overlay");
+      var overlayText = document.getElementById("overlay-text");
+      var banks = [];
+
+      function initials(name) {
+        return name.replace(/[^A-Za-zÅÄÖåäö0-9 ]/g, "").trim().slice(0, 2).toUpperCase() || "🏦";
+      }
+
+      function skeletons() {
+        grid.innerHTML = "";
+        for (var i = 0; i < 6; i++) {
+          var d = document.createElement("div");
+          d.className = "skeleton";
+          grid.appendChild(d);
+        }
+      }
+
+      function render(list) {
+        grid.innerHTML = "";
+        if (list.length === 0) {
+          var e = document.createElement("div");
+          e.className = "empty";
+          e.textContent = "Ingen bank matchar sökningen.";
+          grid.appendChild(e);
+          return;
+        }
+        list.forEach(function (b) {
+          var btn = document.createElement("button");
+          btn.className = "bank";
+          btn.type = "button";
+
+          var logoWrap = document.createElement("div");
+          logoWrap.className = "logo";
+          if (b.logo) {
+            var img = document.createElement("img");
+            img.src = b.logo;
+            img.alt = b.name;
+            img.loading = "lazy";
+            img.onerror = function () {
+              logoWrap.innerHTML = "";
+              var fb = document.createElement("div");
+              fb.className = "fallback";
+              fb.textContent = initials(b.name);
+              logoWrap.appendChild(fb);
+            };
+            logoWrap.appendChild(img);
+          } else {
+            var fb = document.createElement("div");
+            fb.className = "fallback";
+            fb.textContent = initials(b.name);
+            logoWrap.appendChild(fb);
+          }
+
+          var nm = document.createElement("div");
+          nm.className = "name";
+          nm.textContent = b.name;
+
+          btn.appendChild(logoWrap);
+          btn.appendChild(nm);
+          btn.addEventListener("click", function () { select(b.name); });
+          grid.appendChild(btn);
+        });
+      }
+
+      function filter() {
+        var q = searchEl.value.trim().toLowerCase();
+        if (!q) return render(banks);
+        render(banks.filter(function (b) {
+          return b.name.toLowerCase().indexOf(q) !== -1;
+        }));
+      }
+
+      async function select(name) {
+        overlayText.textContent = "Öppnar " + name + "…";
+        overlay.classList.add("on");
         try {
           var r = await fetch(BASE + "/enable-auth", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-            body: JSON.stringify({ aspsp_name: aspsp, klirr_account: aspsp }),
+            body: JSON.stringify({ aspsp_name: name, klirr_account: name }),
           });
           var data = await r.json();
           if (data && data.url) {
             window.location.href = data.url; // vidare till BankID
           } else {
+            overlay.classList.remove("on");
             statusEl.textContent = (data && data.error) || "Kunde inte starta inloggningen.";
           }
         } catch (err) {
+          overlay.classList.remove("on");
           statusEl.textContent = "Nätverksfel: " + err;
         }
-      });
-      document.getElementById("aspsps").addEventListener("error", function () {
-        statusEl.textContent = "Kunde inte ladda banklistan.";
-      });
+      }
+
+      async function load() {
+        skeletons();
+        try {
+          var r = await fetch(BASE + "/enable-aspsps", {
+            headers: { Authorization: "Bearer " + token },
+          });
+          var data = await r.json();
+          if (!data || !data.aspsps) {
+            grid.innerHTML = "";
+            statusEl.textContent = (data && data.error) || "Kunde inte ladda banklistan.";
+            return;
+          }
+          banks = data.aspsps;
+          searchEl.disabled = false;
+          render(banks);
+        } catch (err) {
+          grid.innerHTML = "";
+          statusEl.textContent = "Nätverksfel: " + err;
+        }
+      }
+
+      searchEl.addEventListener("input", filter);
+      load();
     })();
   </script>
 </body>
